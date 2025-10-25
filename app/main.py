@@ -29,6 +29,13 @@ def response(connection: socket.socket):
                 set_key = data_array[1]
                 set_data= data_array[2]
                 data_storage[set_key] = set_data
+
+                if len(data_array)>3:
+                    if 'px' == str.lower(data_array[3]):
+                        time_num = int(data_array[4])
+                        #Timer, threading command
+                        threading.Timer(time_num/1000, data_storage.pop, args=[set_key]).start()
+
                 return_string = '+OK\r\n'
                 connection.sendall( return_string.encode() )
 
@@ -71,16 +78,16 @@ def parser(data: bytes):
             bulk_len = int(data[current_pos+1:bulk_len_seg].decode())
 
                                 #advance past another \r\n pair of bytes
-            bulk_string_start = bulk_len_seg + 2 
+            bulk_bytes_start = bulk_len_seg + 2 
 
                              #start index + len = end index
-            bulk_string_end = bulk_string_start + bulk_len
+            bulk_bytes_end = bulk_bytes_start + bulk_len
             
             #decode to get the string, append to data string array
-            data_str_array.append(data[bulk_string_start:bulk_string_end].decode())
+            data_str_array.append(data[bulk_bytes_start:bulk_bytes_end].decode())
 
             #advance past the \r\n at the end of segment
-            current_pos = bulk_string_end + 2
+            current_pos = bulk_bytes_end + 2
 
     return data_str_array
 
@@ -95,6 +102,7 @@ def main():
         #Wait for a connection to accept
         connection_socket, connection_addr = server_socket.accept()
         #create a thread, connect to function with argument
+        #Thread, threading command
         thread = threading.Thread( target=response, args=(connection_socket,) )
         #start the thread
         thread.start()
