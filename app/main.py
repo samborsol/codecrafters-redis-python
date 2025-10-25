@@ -2,6 +2,8 @@ import socket
 import threading
 
 BUFFER_SIZE = 1024
+data_storage = {}
+
 
 def response(connection: socket.socket):
     while True:
@@ -13,16 +15,33 @@ def response(connection: socket.socket):
             msg_type = data_array[0]
 
             if msg_type == "PING":
-                print(msg_type)
+                #print(msg_type)
                 connection.sendall(b"+PONG\r\n")
             
             if msg_type == "ECHO":
-                print(msg_type)
+                #print(msg_type)
                 echo_msg = data_array[1]
                 return_string = '+' + echo_msg + '\r\n'
                 connection.sendall( return_string.encode() )
 
+            if msg_type == "SET":
+                #print(msg_type)
+                set_key = data_array[1]
+                set_data= data_array[2]
+                data_storage[set_key] = set_data
+                return_string = '+OK\r\n'
+                connection.sendall( return_string.encode() )
 
+            if msg_type == "GET":
+                #print(msg_type)
+                set_key = data_array[1]
+
+                if set_key in data_storage.keys(): 
+                    set_data = data_storage[set_key]
+                    return_string = '+' + set_data + '\r\n'
+                else:
+                    return_string = '$-1\r\n'
+                connection.sendall( return_string.encode() )
 
 
 def parser(data: bytes):
