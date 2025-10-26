@@ -29,26 +29,35 @@ def response(connection: socket.socket):
                 set_key = data_array[1]
                 set_data= data_array[2]
                 data_storage[set_key] = set_data
-
                 if len(data_array)>3:
                     if 'px' == str.lower(data_array[3]):
                         time_num = int(data_array[4])
                         #Timer, threading command
                         threading.Timer(time_num/1000, data_storage.pop, args=[set_key]).start()
-
                 return_string = '+OK\r\n'
                 connection.sendall( return_string.encode() )
 
             if msg_type == "GET":
                 #print(msg_type)
                 set_key = data_array[1]
-
                 if set_key in data_storage.keys(): 
                     set_data = data_storage[set_key]
                     return_string = '+' + set_data + '\r\n'
                 else:
                     return_string = '$-1\r\n'
                 connection.sendall( return_string.encode() )
+
+            if msg_type == "RPUSH":
+                set_key = data_array[1]
+                set_data = data_array[2]
+                if set_key in data_storage.keys():
+                    data_storage[set_key].append(set_data)
+                else:
+                    data_storage[set_key] = [set_data]
+                list_len = len(data_storage[set_key])
+                return_string = ':+' + str(list_len) + '\r\n'
+                connection.sendall( return_string.encode() )
+
 
 
 def parser(data: bytes):
