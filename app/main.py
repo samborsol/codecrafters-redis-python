@@ -49,11 +49,13 @@ def response(connection: socket.socket):
 
             if msg_type == "RPUSH":
                 set_key = data_array[1]
-                set_data = data_array[2]
-                if set_key in data_storage.keys():
-                    data_storage[set_key].append(set_data)
-                else:
-                    data_storage[set_key] = [set_data]
+                for i in range(2, len(data_array)):
+                    set_data = data_array[i]
+                    if set_key in data_storage.keys():
+                        data_storage[set_key].append(set_data)
+                    else:
+                        data_storage[set_key] = [set_data]
+
                 list_len = len(data_storage[set_key])
                 return_string = ':+' + str(list_len) + '\r\n'
                 connection.sendall( return_string.encode() )
