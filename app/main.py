@@ -89,7 +89,7 @@ def response(connection: socket.socket):
                 length_array = (end_ind-start_ind)+1
                 
                 return_string = "*"+str(length_array)+"\r\n"
-                for i in range(start_ind, end_ind):
+                for i in range(start_ind, (end_ind+1) ):
                     length_entry = len( retrieved_list[i].encode() )
                     return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
                 connection.sendall( return_string.encode() )
