@@ -21,7 +21,7 @@ def response(connection: socket.socket):
             if msg_type == "ECHO":
                 #print(msg_type)
                 echo_msg = data_array[1]
-                return_string = '+' + echo_msg + '\r\n'
+                return_string = '$'+str( len(echo_msg.encode() ) )+'\r\n'+echo_msg + '\r\n'
                 connection.sendall( return_string.encode() )
 
             if msg_type == "SET":
@@ -42,7 +42,7 @@ def response(connection: socket.socket):
                 set_key = data_array[1]
                 if set_key in data_storage.keys(): 
                     set_data = data_storage[set_key]
-                    return_string = '+' + set_data + '\r\n'
+                    return_string = '$'+str( len(set_data.encode() ) )+'\r\n'+ set_data + '\r\n'
                 else:
                     return_string = '$-1\r\n'
                 connection.sendall( return_string.encode() )
@@ -64,18 +64,21 @@ def response(connection: socket.socket):
                 set_key = data_array[1]
                 start_ind = int(data_array[2])
                 end_ind = int(data_array[3])
+                set_string = False
+
 
                 if set_key not in data_storage.keys():
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
-                    return
-                
+                    set_string=True
+
                 retrieved_list = data_storage[set_key]
 
                 if start_ind>=len(retrieved_list):
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
-                    return
+                    set_string=True
+
 
                 if end_ind >= len(retrieved_list):
                     end_ind = len(retrieved_list)-1
@@ -83,17 +86,18 @@ def response(connection: socket.socket):
                 if start_ind>end_ind:
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
-                    return
+                    set_string=True
 
 
                 length_array = (end_ind-start_ind)+1
                 
-                return_string = "*"+str(length_array)+"\r\n"
-                for i in range(start_ind, (end_ind+1) ):
-                    length_entry = len( retrieved_list[i].encode() )
-                    return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
-                connection.sendall( return_string.encode() )
-                return
+                if not set_string:
+                    return_string = "*"+str(length_array)+"\r\n"
+                    for i in range(start_ind, (end_ind+1) ):
+                        length_entry = len( retrieved_list[i].encode() )
+                        return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
+                    connection.sendall( return_string.encode() )
+                
             
 def parser(data: bytes):
     if not data.startswith(b'*'):
