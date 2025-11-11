@@ -7,7 +7,6 @@ data_storage = {}
 
 def response(connection: socket.socket):
     while True:
-        print("HELLO")
         #wait for some data to come down the pipe
         data = connection.recv(BUFFER_SIZE)
         if(data):
@@ -95,7 +94,8 @@ def response(connection: socket.socket):
                     return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
                 
                 connection.sendall( return_string.encode() )
-
+                return
+            
 def parser(data: bytes):
     if not data.startswith(b'*'):
         raise ValueError("Not a RESP array")
