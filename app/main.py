@@ -83,7 +83,6 @@ def response(connection: socket.socket):
                 if start_ind>end_ind:
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
-                    print("BINGO")
                     return
 
 
@@ -134,6 +133,7 @@ def parser(data: bytes):
             #advance past the \r\n at the end of segment
             current_pos = bulk_bytes_end + 2
 
+    print(data_str_array)
     return data_str_array
 
 def main():
