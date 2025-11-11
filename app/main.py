@@ -92,7 +92,7 @@ def response(connection: socket.socket):
                 for i in range(start_ind, end_ind+1):
                     length_entry = len( retrieved_list[i].encode() )
                     return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
-                
+                print(return_string)
                 connection.sendall( return_string.encode() )
                 return
             
