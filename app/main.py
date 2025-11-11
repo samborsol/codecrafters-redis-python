@@ -55,12 +55,47 @@ def response(connection: socket.socket):
                         data_storage[set_key].append(set_data)
                     else:
                         data_storage[set_key] = [set_data]
-
                 list_len = len(data_storage[set_key])
                 return_string = ':+' + str(list_len) + '\r\n'
                 connection.sendall( return_string.encode() )
 
+            if msg_type == "LRANGE":
 
+                print("HELLO")
+
+                set_key = data_array[1]
+                start_ind = int(data_array[2])
+                end_ind = int(data_array[3])
+
+                if set_key not in data_storage.keys():
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    return
+                retrieved_list = data_storage[set_key]
+
+                if start_ind>=len(retrieved_list):
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    return
+
+                if end_ind >= len(retrieved_list):
+                    end_ind = len(retrieved_list)-1
+                    print("BINGO")
+
+                if start_ind>end_ind:
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    return
+
+
+                length_array = (end_ind-start_ind)+1
+                
+                return_string = "*"+str(length_array)+"\r\n"
+                for i in range(start_ind, end_ind+1):
+                    length_entry = len( retrieved_list[i].encode() )
+                    return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
+                
+                connection.sendall( return_string.encode() )
 
 def parser(data: bytes):
     if not data.startswith(b'*'):
