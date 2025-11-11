@@ -7,9 +7,9 @@ data_storage = {}
 
 def response(connection: socket.socket):
     while True:
+        print("HELLO")
         #wait for some data to come down the pipe
         data = connection.recv(BUFFER_SIZE)
-        print("HELLO")
         if(data):
             data_array = parser(data)
             
