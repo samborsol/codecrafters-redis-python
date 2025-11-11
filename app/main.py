@@ -61,8 +61,6 @@ def response(connection: socket.socket):
 
             if msg_type == "LRANGE":
 
-                print("HELLO")
-
                 set_key = data_array[1]
                 start_ind = int(data_array[2])
                 end_ind = int(data_array[3])
@@ -71,6 +69,7 @@ def response(connection: socket.socket):
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
                     return
+                
                 retrieved_list = data_storage[set_key]
 
                 if start_ind>=len(retrieved_list):
@@ -80,11 +79,11 @@ def response(connection: socket.socket):
 
                 if end_ind >= len(retrieved_list):
                     end_ind = len(retrieved_list)-1
-                    print("BINGO")
 
                 if start_ind>end_ind:
                     return_string = "*0\r\n"
                     connection.sendall( return_string.encode() )
+                    print("BINGO")
                     return
 
 
