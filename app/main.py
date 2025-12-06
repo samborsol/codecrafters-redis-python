@@ -5,6 +5,60 @@ BUFFER_SIZE = 1024
 data_storage = {}
 
 
+def negative_indices_in_LRANGE(start_ind, end_ind, length):
+
+    if( start_ind < -1*length ):
+        start_ind = 0
+    if( end_ind < -1*length ):
+        end_ind = 0 
+
+    if ( start_ind < 0 ):
+        start_ind = length + start_ind  
+    if ( end_ind < 0 ):
+        end_ind   = length + end_ind 
+
+    print( str(start_ind)+" "+str(end_ind) )
+    return start_ind, end_ind
+
+def send_LRANGE_response( set_key, start_ind, end_ind, connection ):
+                set_string = False
+
+                if set_key not in data_storage.keys():
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    set_string=True
+
+                retrieved_list = data_storage[set_key]
+
+                if ( start_ind < 0 ) or ( end_ind < 0 ):
+                    start_ind, end_ind = negative_indices_in_LRANGE( start_ind, end_ind , len( retrieved_list ) )
+
+
+                if start_ind>=len(retrieved_list):
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    set_string=True
+
+
+                if end_ind >= len(retrieved_list):
+                    end_ind = len(retrieved_list)-1
+
+                if start_ind>end_ind:
+                    return_string = "*0\r\n"
+                    connection.sendall( return_string.encode() )
+                    set_string=True
+
+
+                length_array = (end_ind-start_ind)+1
+                
+                if not set_string:
+                    return_string = "*"+str(length_array)+"\r\n"
+                    for i in range(start_ind, (end_ind+1) ):
+                        length_entry = len( retrieved_list[i].encode() )
+                        return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
+                    connection.sendall( return_string.encode() )
+
+
 def response(connection: socket.socket):
     while True:
         #wait for some data to come down the pipe
@@ -60,43 +114,11 @@ def response(connection: socket.socket):
                 connection.sendall( return_string.encode() )
 
             if msg_type == "LRANGE":
-
                 set_key = data_array[1]
                 start_ind = int(data_array[2])
                 end_ind = int(data_array[3])
-                set_string = False
+                send_LRANGE_response( set_key, start_ind, end_ind, connection )
 
-
-                if set_key not in data_storage.keys():
-                    return_string = "*0\r\n"
-                    connection.sendall( return_string.encode() )
-                    set_string=True
-
-                retrieved_list = data_storage[set_key]
-
-                if start_ind>=len(retrieved_list):
-                    return_string = "*0\r\n"
-                    connection.sendall( return_string.encode() )
-                    set_string=True
-
-
-                if end_ind >= len(retrieved_list):
-                    end_ind = len(retrieved_list)-1
-
-                if start_ind>end_ind:
-                    return_string = "*0\r\n"
-                    connection.sendall( return_string.encode() )
-                    set_string=True
-
-
-                length_array = (end_ind-start_ind)+1
-                
-                if not set_string:
-                    return_string = "*"+str(length_array)+"\r\n"
-                    for i in range(start_ind, (end_ind+1) ):
-                        length_entry = len( retrieved_list[i].encode() )
-                        return_string = return_string + "$"+str(length_entry)+"\r\n"+str(retrieved_list[i])+"\r\n"
-                    connection.sendall( return_string.encode() )
                 
             
 def parser(data: bytes):
